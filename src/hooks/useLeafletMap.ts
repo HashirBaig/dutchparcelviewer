@@ -23,7 +23,7 @@ export function useLeafletMap(
         maxZoom: def.maxZoom,
       });
     }
-    layers[BASE_LAYERS[0].name].addTo(instance);
+    layers[BASE_LAYERS[1].name].addTo(instance);
     L.control.layers(layers).addTo(instance);
 
     setMap(instance);
