@@ -25,6 +25,7 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
   const year = parcel.year ?? new Date().getFullYear();
   const profile = CROP_PROFILES[parcel.cropGroup];
   const events = analysis.markers.flatMap((m) => m.events);
+  const smoothed = analysis.markers.find((marker) => marker.series)?.series;
 
   return (
     <div className="panel">
@@ -46,6 +47,7 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
           <NdviChart
             observations={analysis.observations}
             events={events}
+            smoothed={smoothed}
             year={year}
             expectedWindow={
               profile
@@ -53,13 +55,17 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
                 : undefined
             }
           />
+
           <p className="muted">
             {analysis.observations.length} clear observations from{" "}
             {analysis.scenesTotal} scenes
             {analysis.scenesFailed > 0
               ? ` (${analysis.scenesFailed} failed to read)`
               : ""}
-            . Median NDVI of cloud-free pixels, edges excluded.
+            . Dots: per-scene median NDVI of cloud-free pixels.{" "}
+            {smoothed
+              ? "Orange line: 12-day composites, smoothed, used for the peak."
+              : ""}
           </p>
 
           {analysis.markers.map((marker) => (

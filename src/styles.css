@@ -210,10 +210,20 @@ body {
   font-size: 10px;
   fill: var(--muted);
 }
+
 .chart__line {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 1.5;
+  stroke-width: 1;
+  opacity: 0.35;
+}
+.chart__smooth {
+  fill: none;
+  stroke: #f59e0b;
+  stroke-width: 2.5;
+}
+.chart__smooth-point {
+  fill: #f59e0b;
 }
 .chart__point {
   fill: var(--accent);

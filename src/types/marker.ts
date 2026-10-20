@@ -10,12 +10,18 @@ export interface MarkerEvent {
   label: string;
 }
 
+export interface SeriesPoint {
+  date: string;
+  ndvi: number;
+}
+
 export interface MarkerResult {
   id: string;
   name: string;
   status: MarkerStatus;
   summary: string;
   events: MarkerEvent[];
+  series?: SeriesPoint[]; // smoothed curve the marker used, for charting
 }
 
 export interface ParcelVerdict {

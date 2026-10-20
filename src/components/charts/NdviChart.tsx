@@ -1,13 +1,14 @@
 import { CHART, MONTH_LABELS, Y_TICKS } from "../../constants/chart";
 import { SEASON_END_MONTH, SEASON_START_MONTH } from "../../constants/analysis";
 import { dayOfYear, monthStartDoy } from "../../lib/dates";
-import type { MarkerEvent } from "../../types/marker";
+import type { MarkerEvent, SeriesPoint } from "../../types/marker";
 import type { NdviObservation } from "../../types/timeseries";
 
 interface Props {
   observations: NdviObservation[];
   events: MarkerEvent[];
   year: number;
+  smoothed?: SeriesPoint[];
   expectedWindow?: { startDoy: number; endDoy: number };
 }
 
@@ -15,6 +16,7 @@ export function NdviChart({
   observations,
   events,
   year,
+  smoothed,
   expectedWindow,
 }: Props) {
   const { width, height, margin } = CHART;
@@ -32,9 +34,11 @@ export function NdviChart({
     { length: SEASON_END_MONTH - SEASON_START_MONTH + 1 },
     (_, i) => SEASON_START_MONTH + i,
   );
-  const path = observations
-    .map((o, i) => `${i ? "L" : "M"}${x(dayOfYear(o.date))},${y(o.ndvi)}`)
-    .join(" ");
+
+  const toPath = (points: { date: string; ndvi: number }[]) =>
+    points
+      .map((p, i) => `${i ? "L" : "M"}${x(dayOfYear(p.date))},${y(p.ndvi)}`)
+      .join(" ");
 
   return (
     <svg
@@ -91,7 +95,9 @@ export function NdviChart({
           className="chart__event"
         />
       ))}
-      {observations.length > 0 && <path d={path} className="chart__line" />}
+      {observations.length > 0 && (
+        <path d={toPath(observations)} className="chart__line" />
+      )}
       {observations.map((o) => (
         <circle
           key={o.itemId}
@@ -102,6 +108,20 @@ export function NdviChart({
           className="chart__point"
         >
           <title>{`${o.date}: NDVI ${o.ndvi.toFixed(2)} (${Math.round(o.validFraction * 100)}% clear)`}</title>
+        </circle>
+      ))}
+      {smoothed && smoothed.length > 1 && (
+        <path d={toPath(smoothed)} className="chart__smooth" />
+      )}
+      {smoothed?.map((p) => (
+        <circle
+          key={p.date}
+          cx={x(dayOfYear(p.date))}
+          cy={y(p.ndvi)}
+          r={2.5}
+          className="chart__smooth-point"
+        >
+          <title>{`${p.date}: smoothed NDVI ${p.ndvi.toFixed(2)}`}</title>
         </circle>
       ))}
     </svg>
