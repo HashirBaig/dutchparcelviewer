@@ -1,5 +1,11 @@
 import type { CropGroup } from "../types/parcel";
-import type { CropProfile } from "../types/marker";
+import type { CropProfile, ProfileMeta } from "../types/marker";
+
+import profileData from "../data/cropProfiles.json";
+
+export const CROP_PROFILES: Partial<Record<CropGroup, CropProfile>> =
+  profileData.profiles;
+export const CROP_PROFILE_META: ProfileMeta = profileData.meta;
 
 export const CROP_GROUP_PATTERNS: {
   group: Exclude<CropGroup, "other">;
@@ -28,12 +34,4 @@ export const CROP_COLORS: Record<CropGroup, string> = {
   sugarbeet: "#ab47bc",
   cereal: "#d4b106",
   other: "#607d8b",
-};
-
-// Expected NDVI peak window (day of year) and minimum peak NDVI. Rough first guesses.
-export const CROP_PROFILES: Partial<Record<CropGroup, CropProfile>> = {
-  maize: { peakStartDoy: 190, peakEndDoy: 250, minPeakNdvi: 0.7 },
-  potato: { peakStartDoy: 160, peakEndDoy: 240, minPeakNdvi: 0.65 },
-  sugarbeet: { peakStartDoy: 180, peakEndDoy: 260, minPeakNdvi: 0.7 },
-  cereal: { peakStartDoy: 110, peakEndDoy: 185, minPeakNdvi: 0.65 },
 };

@@ -28,3 +28,12 @@ export interface CropProfile {
   peakEndDoy: number;
   minPeakNdvi: number;
 }
+
+export interface ProfileMeta {
+  source: string;
+  region: string;
+  year: number | null;
+  sampleSize: number | null;
+  lowerPercentile: number;
+  upperPercentile: number;
+}

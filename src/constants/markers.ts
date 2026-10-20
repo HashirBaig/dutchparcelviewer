@@ -18,7 +18,7 @@ export const MOWING = {
 export const STATUS_LABELS: Record<MarkerStatus, string> = {
   green: "Consistent",
   yellow: "Review",
-  red: "Inconsistent",
+  red: "Outside expected profile",
   insufficient: "Insufficient data",
   "not-assessed": "Not assessed",
 };

@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "source": "Sentinel-2 L2A via Google Earth Engine",
+    "region": "Twente",
+    "year": null,
+    "sampleSize": null,
+    "lowerPercentile": 5,
+    "upperPercentile": 95
+  },
+  "profiles": {
+    "cereal": { "peakStartDoy": 114, "peakEndDoy": 282, "minPeakNdvi": 0.742 },
+    "maize": { "peakStartDoy": 186, "peakEndDoy": 234, "minPeakNdvi": 0.823 },
+    "potato": { "peakStartDoy": 162, "peakEndDoy": 227, "minPeakNdvi": 0.812 },
+    "sugarbeet": {
+      "peakStartDoy": 162,
+      "peakEndDoy": 282,
+      "minPeakNdvi": 0.804
+    }
+  }
+}

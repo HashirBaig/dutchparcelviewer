@@ -6,6 +6,7 @@ import { ProgressBar } from "../ui/ProgressBar";
 import { StatusBadge } from "../ui/StatusBadge";
 import { MarkerCard } from "./MarkerCard";
 import { ParcelSummary } from "./ParcelSummary";
+import { ProfileNote } from "./ProfileNote";
 
 export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
   const analysis = useParcelAnalysis(parcel);
@@ -65,10 +66,7 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
             <MarkerCard key={marker.id} marker={marker} />
           ))}
 
-          <p className="muted">
-            Prototype rules, not yet validated against reference data. The
-            declared crop is from the BRP snapshot.
-          </p>
+          <ProfileNote group={parcel.cropGroup} />
         </>
       )}
     </div>
