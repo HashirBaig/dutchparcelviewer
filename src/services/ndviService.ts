@@ -4,6 +4,7 @@ import {
   S2_DEFAULT_OFFSET,
   S2_DEFAULT_SCALE,
   S2_OFFSET_CHANGE_DATE,
+  SCL_PREFILTER_SLACK,
   VALID_SCL_CLASSES,
 } from "../constants/analysis";
 import { S2_ASSET_KEYS } from "../constants/api";
@@ -22,6 +23,7 @@ import { projectPolygons } from "../lib/projection";
 import { sampleWindow } from "../lib/raster";
 import { median } from "../lib/stats";
 import type { Parcel } from "../types/parcel";
+import type { RasterWindow } from "../types/raster";
 import type { StacAsset, StacItem } from "../types/stac";
 import type {
   NdviObservation,
@@ -45,6 +47,17 @@ function getReflectanceParams(asset: StacAsset, datetime: string) {
     scale: band?.scale ?? S2_DEFAULT_SCALE,
     offset: band?.offset ?? (afterChange ? S2_DEFAULT_OFFSET : 0),
   };
+}
+
+/** Share of clear pixels inside the parcel on the coarse SCL grid. Null if no SCL pixel falls inside. */
+function clearFraction(scl: RasterWindow, polygons: Polygons): number | null {
+  const { mask, count } = buildPixelMask(polygons, scl, 0);
+  if (count === 0) return null;
+  let clear = 0;
+  for (let i = 0; i < mask.length; i++) {
+    if (mask[i] && VALID_SCL_CLASSES.has(scl.values[i])) clear++;
+  }
+  return clear / count;
 }
 
 interface SeriesContext {
@@ -71,12 +84,23 @@ async function observeItem(
   if (!redAsset || !nirAsset || !sclAsset) return null;
 
   const bounds = padBounds(boundsOf(polygons), 10);
-  const [red, nir, scl] = await Promise.all([
+
+  // Phase 1: cheap 20 m scene classification. Skip cloudy scenes before touching red/NIR.
+  const scl = await readWindow(sclAsset.href, bounds, ctx.signal);
+  if (!scl) return null;
+  const prefilter = clearFraction(scl, polygons);
+  if (
+    prefilter !== null &&
+    prefilter < MIN_VALID_FRACTION - SCL_PREFILTER_SLACK
+  )
+    return null;
+
+  // Phase 2: 10 m red and NIR
+  const [red, nir] = await Promise.all([
     readWindow(redAsset.href, bounds, ctx.signal),
     readWindow(nirAsset.href, bounds, ctx.signal),
-    readWindow(sclAsset.href, bounds, ctx.signal),
   ]);
-  if (!red || !nir || !scl) return null;
+  if (!red || !nir) return null;
   if (red.width !== nir.width || red.height !== nir.height) return null;
 
   const maskKey = `${epsg}:${nir.originX}:${nir.originY}:${nir.width}:${nir.height}`;
@@ -127,7 +151,7 @@ async function observeItem(
   };
 }
 
-/** Keeps the best observation per day (overlapping tiles can give duplicates). */
+/** Keeps the best observation per day (safety net after scene selection). */
 function dedupeByDate(observations: NdviObservation[]): NdviObservation[] {
   const best = new Map<string, NdviObservation>();
   for (const obs of observations) {

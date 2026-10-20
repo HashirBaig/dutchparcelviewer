@@ -81,6 +81,20 @@ function inRing(x: number, y: number, ring: Ring): boolean {
 const inPolygon = (x: number, y: number, [outer, ...holes]: PolygonCoords) =>
   inRing(x, y, outer) && !holes.some((h) => inRing(x, y, h));
 
+/** True when all four corners of the bounds lie inside the polygon (lon/lat or projected, same CRS). */
+export function containsBounds(
+  polygon: PolygonCoords,
+  [minX, minY, maxX, maxY]: Bounds,
+): boolean {
+  const corners: [number, number][] = [
+    [minX, minY],
+    [minX, maxY],
+    [maxX, minY],
+    [maxX, maxY],
+  ];
+  return corners.every(([x, y]) => inPolygon(x, y, polygon));
+}
+
 function distanceToSegment(
   px: number,
   py: number,

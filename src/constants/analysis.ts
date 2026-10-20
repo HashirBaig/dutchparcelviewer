@@ -2,7 +2,9 @@ export const SEASON_START_MONTH = 3; // March
 export const SEASON_END_MONTH = 10; // October
 export const MAX_CLOUD_COVER = 80; // scene-level filter in STAC search
 export const MIN_VALID_FRACTION = 0.6; // min share of clear parcel pixels per scene
-export const FETCH_CONCURRENCY = 4;
+export const FETCH_CONCURRENCY = 6;
+// SCL is 20 m and the prefilter mask ignores the inner buffer, so allow some slack vs MIN_VALID_FRACTION
+export const SCL_PREFILTER_SLACK = 0.1;
 
 // Sentinel-2 Scene Classification: 4 vegetation, 5 not vegetated, 7 unclassified
 export const VALID_SCL_CLASSES = new Set([4, 5, 7]);
