@@ -83,8 +83,8 @@ Specific imagery processing, embedding, and hosting services may change as the p
 ### Run locally
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
-cd <YOUR_REPOSITORY_DIRECTORY>
+git clone https://github.com/HashirBaig/dutchparcelviewer
+cd dutchparcelviewer
 npm install
 npm run dev
 ```
