@@ -1,5 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
-// base "./" lets the static build run from any path (e.g. GitHub Pages project sites). NFR-01.
-export default defineConfig({ base: "./", plugins: [react()] });
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+});
