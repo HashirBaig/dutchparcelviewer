@@ -30,3 +30,9 @@ export const STATUS_COLORS: Record<MarkerStatus, string> = {
   insufficient: "#7a8794",
   "not-assessed": "#9aa5b1",
 };
+
+// Crop profile marker: compositing and smoothing
+export const COMPOSITE_DAYS = 12;
+export const COMPOSITE_MIDPOINT_OFFSET_DAYS = 5; // midpoint = bin start day + 5
+export const MIN_VALID_COMPOSITES = 9;
+export const SMOOTHING_WINDOW = 3; // composites, centred rolling median

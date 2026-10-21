@@ -15,3 +15,10 @@ export interface Progress {
   done: number;
   total: number;
 }
+
+export interface NdviComposite {
+  date: string; // YYYY-MM-DD, midpoint of the bin
+  doy: number;
+  ndvi: number;
+  index: number; // 12-day bin number within the year
+}
