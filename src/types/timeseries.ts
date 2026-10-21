@@ -22,3 +22,16 @@ export interface NdviComposite {
   ndvi: number;
   index: number; // 12-day bin number within the year
 }
+
+/** Inclusive day-of-year range. */
+export interface DateRange {
+  startDoy: number;
+  endDoy: number;
+}
+
+export interface RangeStats {
+  count: number;
+  mean: number | null;
+  peak: NdviObservation | null;
+  trendPer30Days: number | null; // least-squares slope of NDVI, per 30 days
+}

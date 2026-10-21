@@ -1,13 +1,15 @@
-import { CHART, MONTH_LABELS, Y_TICKS } from "../../constants/chart";
-import { SEASON_END_MONTH, SEASON_START_MONTH } from "../../constants/analysis";
-import { dayOfYear, monthStartDoy } from "../../lib/dates";
+import { CHART, Y_TICKS } from "../../constants/chart";
+import { buildTicks } from "../../lib/chartTicks";
+import { filterByRange } from "../../lib/dateRange";
+import { dayOfYear } from "../../lib/dates";
 import type { MarkerEvent, SeriesPoint } from "../../types/marker";
-import type { NdviObservation } from "../../types/timeseries";
+import type { DateRange, NdviObservation } from "../../types/timeseries";
 
 interface Props {
   observations: NdviObservation[];
   events: MarkerEvent[];
   year: number;
+  range: DateRange;
   smoothed?: SeriesPoint[];
   expectedWindow?: { startDoy: number; endDoy: number };
 }
@@ -16,6 +18,7 @@ export function NdviChart({
   observations,
   events,
   year,
+  range,
   smoothed,
   expectedWindow,
 }: Props) {
@@ -23,17 +26,21 @@ export function NdviChart({
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
 
-  const xMin = monthStartDoy(year, SEASON_START_MONTH);
-  const xMax = monthStartDoy(year, SEASON_END_MONTH + 1) - 1;
   const x = (doy: number) =>
-    margin.left + ((doy - xMin) / (xMax - xMin)) * innerW;
+    margin.left +
+    ((doy - range.startDoy) / (range.endDoy - range.startDoy)) * innerW;
   const y = (v: number) =>
     margin.top + (1 - Math.max(0, Math.min(1, v))) * innerH;
 
-  const months = Array.from(
-    { length: SEASON_END_MONTH - SEASON_START_MONTH + 1 },
-    (_, i) => SEASON_START_MONTH + i,
-  );
+  const visibleObs = filterByRange(observations, range);
+  const visibleSmooth = smoothed ? filterByRange(smoothed, range) : [];
+  const visibleEvents = filterByRange(events, range);
+  const ticks = buildTicks(year, range);
+
+  const windowVisible =
+    expectedWindow &&
+    expectedWindow.endDoy > range.startDoy &&
+    expectedWindow.startDoy < range.endDoy;
 
   const toPath = (points: { date: string; ndvi: number }[]) =>
     points
@@ -47,11 +54,14 @@ export function NdviChart({
       role="img"
       aria-label="NDVI time series"
     >
-      {expectedWindow && (
+      {windowVisible && (
         <rect
-          x={x(expectedWindow.startDoy)}
+          x={x(Math.max(expectedWindow.startDoy, range.startDoy))}
           y={margin.top}
-          width={x(expectedWindow.endDoy) - x(expectedWindow.startDoy)}
+          width={
+            x(Math.min(expectedWindow.endDoy, range.endDoy)) -
+            x(Math.max(expectedWindow.startDoy, range.startDoy))
+          }
           height={innerH}
           className="chart__window"
         />
@@ -75,17 +85,18 @@ export function NdviChart({
           </text>
         </g>
       ))}
-      {months.map((month) => (
+      {ticks.map((tick) => (
         <text
-          key={month}
-          x={x(monthStartDoy(year, month))}
+          key={tick.doy}
+          x={x(tick.doy)}
           y={height - 8}
+          textAnchor="middle"
           className="chart__label"
         >
-          {MONTH_LABELS[month - 1]}
+          {tick.label}
         </text>
       ))}
-      {events.map((event) => (
+      {visibleEvents.map((event) => (
         <line
           key={`${event.date}-${event.label}`}
           x1={x(dayOfYear(event.date))}
@@ -95,10 +106,10 @@ export function NdviChart({
           className="chart__event"
         />
       ))}
-      {observations.length > 0 && (
-        <path d={toPath(observations)} className="chart__line" />
+      {visibleObs.length > 1 && (
+        <path d={toPath(visibleObs)} className="chart__line" />
       )}
-      {observations.map((o) => (
+      {visibleObs.map((o) => (
         <circle
           key={o.itemId}
           cx={x(dayOfYear(o.date))}
@@ -110,10 +121,10 @@ export function NdviChart({
           <title>{`${o.date}: NDVI ${o.ndvi.toFixed(2)} (${Math.round(o.validFraction * 100)}% clear)`}</title>
         </circle>
       ))}
-      {smoothed && smoothed.length > 1 && (
-        <path d={toPath(smoothed)} className="chart__smooth" />
+      {visibleSmooth.length > 1 && (
+        <path d={toPath(visibleSmooth)} className="chart__smooth" />
       )}
-      {smoothed?.map((p) => (
+      {visibleSmooth.map((p) => (
         <circle
           key={p.date}
           cx={x(dayOfYear(p.date))}

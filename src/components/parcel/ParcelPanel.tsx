@@ -1,15 +1,22 @@
 import { CROP_PROFILES } from "../../constants/crops";
+import { useDateRange } from "../../hooks/useDateRange";
 import { useParcelAnalysis } from "../../hooks/useParcelAnalysis";
+import { filterByRange } from "../../lib/dateRange";
+import { computeRangeStats } from "../../lib/rangeStats";
 import type { Parcel } from "../../types/parcel";
 import { NdviChart } from "../charts/NdviChart";
+import { DateRangeFilter } from "../filters/DateRangeFilter";
 import { ProgressBar } from "../ui/ProgressBar";
 import { StatusBadge } from "../ui/StatusBadge";
 import { MarkerCard } from "./MarkerCard";
 import { ParcelSummary } from "./ParcelSummary";
 import { ProfileNote } from "./ProfileNote";
+import { RangeStatsPanel } from "./RangeStatsPanel";
 
 export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
   const analysis = useParcelAnalysis(parcel);
+  const year = parcel?.year ?? new Date().getFullYear();
+  const dateRange = useDateRange(year, parcel?.id ?? null);
 
   if (!parcel) {
     return (
@@ -22,10 +29,12 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
     );
   }
 
-  const year = parcel.year ?? new Date().getFullYear();
   const profile = CROP_PROFILES[parcel.cropGroup];
   const events = analysis.markers.flatMap((m) => m.events);
-  const smoothed = analysis.markers.find((marker) => marker.series)?.series;
+  const smoothed = analysis.markers.find((m) => m.series)?.series;
+  const stats = computeRangeStats(
+    filterByRange(analysis.observations, dateRange.range),
+  );
 
   return (
     <div className="panel">
@@ -44,11 +53,23 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
             <span>{analysis.verdict.summary}</span>
           </div>
 
+          <DateRangeFilter
+            year={year}
+            observations={analysis.observations}
+            bounds={dateRange.bounds}
+            range={dateRange.range}
+            isFull={dateRange.isFull}
+            onChange={dateRange.setRange}
+            onPreset={dateRange.applyPreset}
+            onReset={dateRange.reset}
+          />
+
           <NdviChart
             observations={analysis.observations}
             events={events}
             smoothed={smoothed}
             year={year}
+            range={dateRange.range}
             expectedWindow={
               profile
                 ? { startDoy: profile.peakStartDoy, endDoy: profile.peakEndDoy }
@@ -56,16 +77,18 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
             }
           />
 
+          <RangeStatsPanel stats={stats} />
+
           <p className="muted">
             {analysis.observations.length} clear observations from{" "}
             {analysis.scenesTotal} scenes
             {analysis.scenesFailed > 0
               ? ` (${analysis.scenesFailed} failed to read)`
               : ""}
-            . Dots: per-scene median NDVI of cloud-free pixels.{" "}
-            {smoothed
-              ? "Orange line: 12-day composites, smoothed, used for the peak."
-              : ""}
+            . Dots: per-scene median NDVI of cloud-free pixels.
+            {smoothed ? " Orange line: 12-day composites, smoothed." : ""} The
+            period filter changes the view and the stats above only. Markers
+            always use the full season.
           </p>
 
           {analysis.markers.map((marker) => (
