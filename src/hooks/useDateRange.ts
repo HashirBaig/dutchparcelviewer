@@ -28,3 +28,5 @@ export function useDateRange(year: number, resetKey: string | null) {
     isFull: sameRange(range, bounds),
   };
 }
+
+export type DateRangeController = ReturnType<typeof useDateRange>;

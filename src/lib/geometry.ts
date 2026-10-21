@@ -1,7 +1,7 @@
 import type { Position } from "geojson";
 import { INNER_BUFFER_RULES } from "../constants/analysis";
 import type { ParcelGeometry } from "../types/parcel";
-import type { RasterWindow } from "../types/raster";
+import type { GridSpec } from "../types/raster";
 
 export type Ring = Position[];
 export type PolygonCoords = Ring[]; // outer ring first, then holes
@@ -81,6 +81,12 @@ function inRing(x: number, y: number, ring: Ring): boolean {
 const inPolygon = (x: number, y: number, [outer, ...holes]: PolygonCoords) =>
   inRing(x, y, outer) && !holes.some((h) => inRing(x, y, h));
 
+export const pointInPolygons = (
+  x: number,
+  y: number,
+  polygons: Polygons,
+): boolean => polygons.some((polygon) => inPolygon(x, y, polygon));
+
 /** True when all four corners of the bounds lie inside the polygon (lon/lat or projected, same CRS). */
 export function containsBounds(
   polygon: PolygonCoords,
@@ -131,11 +137,12 @@ export interface PixelMask {
 /** Marks pixels whose centre lies inside the parcel and at least bufferM from its edge. */
 export function buildPixelMask(
   polygons: Polygons,
-  win: RasterWindow,
+  win: GridSpec,
   bufferM: number,
 ): PixelMask {
   const mask = new Uint8Array(win.width * win.height);
   let count = 0;
+
   for (let row = 0; row < win.height; row++) {
     for (let col = 0; col < win.width; col++) {
       const x = win.originX + (col + 0.5) * win.resX;

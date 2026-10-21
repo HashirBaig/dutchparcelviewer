@@ -16,6 +16,7 @@ const INITIAL: AnalysisState = {
   phase: "idle",
   progress: { done: 0, total: 0 },
   observations: [],
+  pixels: null,
   markers: [],
   verdict: null,
   scenesTotal: 0,
@@ -29,6 +30,7 @@ function toDoneState(parcel: Parcel, result: NdviSeriesResult): AnalysisState {
     phase: "done",
     progress: { done: result.itemsTotal, total: result.itemsTotal },
     observations: result.observations,
+    pixels: result.pixels,
     markers,
     verdict: getVerdict(markers),
     scenesTotal: result.itemsTotal,
@@ -52,7 +54,8 @@ export function useParcelAnalysis(parcel: Parcel | null): AnalysisState {
         const year = parcel.year ?? new Date().getFullYear();
         const cacheKey = `${parcel.id}:${year}`;
 
-        const cached = loadCachedSeries(cacheKey, year);
+        const cached = await loadCachedSeries(cacheKey, year);
+        if (controller.signal.aborted) return;
         if (cached) {
           setState(toDoneState(parcel, cached));
           return;
@@ -80,7 +83,7 @@ export function useParcelAnalysis(parcel: Parcel | null): AnalysisState {
           controller.signal,
         );
 
-        saveCachedSeries(cacheKey, result);
+        void saveCachedSeries(cacheKey, result);
         setState(toDoneState(parcel, result));
       } catch (error) {
         if (isAbortError(error)) return;

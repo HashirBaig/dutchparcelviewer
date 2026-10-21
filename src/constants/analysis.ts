@@ -20,3 +20,5 @@ export const INNER_BUFFER_RULES = [
   { minAreaM2: 3_000, bufferM: 5 },
   { minAreaM2: 0, bufferM: 0 },
 ] as const;
+
+export const S2_PIXEL_SIZE_M = 10;

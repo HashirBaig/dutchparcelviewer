@@ -1,4 +1,9 @@
-import { CACHE_PREFIX, CACHE_TTL_MS } from "../constants/cache";
+import {
+  CACHE_DB_NAME,
+  CACHE_DB_VERSION,
+  CACHE_STORE,
+  CACHE_TTL_MS,
+} from "../constants/cache";
 import type { NdviSeriesResult } from "../types/timeseries";
 
 interface CacheEntry {
@@ -10,25 +15,57 @@ interface CacheEntry {
 const ttlFor = (year: number) =>
   year < new Date().getFullYear() ? Number.POSITIVE_INFINITY : CACHE_TTL_MS;
 
-export function loadCachedSeries(
+function openDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(CACHE_DB_NAME, CACHE_DB_VERSION);
+    request.onupgradeneeded = () =>
+      request.result.createObjectStore(CACHE_STORE);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function loadCachedSeries(
   key: string,
   year: number,
-): NdviSeriesResult | null {
+): Promise<NdviSeriesResult | null> {
   try {
-    const raw = localStorage.getItem(CACHE_PREFIX + key);
-    if (!raw) return null;
-    const entry = JSON.parse(raw) as CacheEntry;
-    return Date.now() - entry.savedAt <= ttlFor(year) ? entry.result : null;
+    const db = await openDb();
+    const entry = await new Promise<CacheEntry | undefined>(
+      (resolve, reject) => {
+        const request = db
+          .transaction(CACHE_STORE)
+          .objectStore(CACHE_STORE)
+          .get(key);
+        request.onsuccess = () =>
+          resolve(request.result as CacheEntry | undefined);
+        request.onerror = () => reject(request.error);
+      },
+    );
+    db.close();
+    if (!entry || Date.now() - entry.savedAt > ttlFor(year)) return null;
+    return entry.result;
   } catch {
     return null;
   }
 }
 
-export function saveCachedSeries(key: string, result: NdviSeriesResult): void {
+export async function saveCachedSeries(
+  key: string,
+  result: NdviSeriesResult,
+): Promise<void> {
   try {
+    const db = await openDb();
     const entry: CacheEntry = { savedAt: Date.now(), result };
-    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(entry));
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, "readwrite");
+      tx.objectStore(CACHE_STORE).put(entry, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+    db.close();
   } catch {
-    // storage full or unavailable: caching is best-effort
+    // caching is best-effort
   }
 }

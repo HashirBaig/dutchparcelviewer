@@ -7,7 +7,8 @@ export function getParcelStyle(
   selected: boolean,
 ): PathOptions {
   const color = CROP_COLORS[group];
+  // Selected parcel: outline only, so the NDVI image underneath shows through
   return selected
-    ? { color: "#111827", weight: 3, fillColor: color, fillOpacity: 0.55 }
+    ? { color: "#111827", weight: 3, fillColor: color, fillOpacity: 0 }
     : { color, weight: 1, fillColor: color, fillOpacity: 0.3 };
 }

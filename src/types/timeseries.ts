@@ -1,3 +1,5 @@
+import type { PixelStack } from "./pixels";
+
 export interface NdviObservation {
   date: string; // YYYY-MM-DD
   ndvi: number;
@@ -9,6 +11,7 @@ export interface NdviSeriesResult {
   observations: NdviObservation[];
   itemsTotal: number;
   itemsFailed: number;
+  pixels: PixelStack | null;
 }
 
 export interface Progress {

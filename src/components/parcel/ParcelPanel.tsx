@@ -1,8 +1,8 @@
 import { CROP_PROFILES } from "../../constants/crops";
-import { useDateRange } from "../../hooks/useDateRange";
-import { useParcelAnalysis } from "../../hooks/useParcelAnalysis";
+import type { DateRangeController } from "../../hooks/useDateRange";
 import { filterByRange } from "../../lib/dateRange";
 import { computeRangeStats } from "../../lib/rangeStats";
+import type { AnalysisState } from "../../types/analysis";
 import type { Parcel } from "../../types/parcel";
 import { NdviChart } from "../charts/NdviChart";
 import { DateRangeFilter } from "../filters/DateRangeFilter";
@@ -13,11 +13,13 @@ import { ParcelSummary } from "./ParcelSummary";
 import { ProfileNote } from "./ProfileNote";
 import { RangeStatsPanel } from "./RangeStatsPanel";
 
-export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
-  const analysis = useParcelAnalysis(parcel);
-  const year = parcel?.year ?? new Date().getFullYear();
-  const dateRange = useDateRange(year, parcel?.id ?? null);
+interface Props {
+  parcel: Parcel | null;
+  analysis: AnalysisState;
+  dateRange: DateRangeController;
+}
 
+export function ParcelPanel({ parcel, analysis, dateRange }: Props) {
   if (!parcel) {
     return (
       <div className="panel panel--empty">
@@ -29,6 +31,7 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
     );
   }
 
+  const year = parcel.year ?? new Date().getFullYear();
   const profile = CROP_PROFILES[parcel.cropGroup];
   const events = analysis.markers.flatMap((m) => m.events);
   const smoothed = analysis.markers.find((m) => m.series)?.series;
@@ -87,8 +90,9 @@ export function ParcelPanel({ parcel }: { parcel: Parcel | null }) {
               : ""}
             . Dots: per-scene median NDVI of cloud-free pixels.
             {smoothed ? " Orange line: 12-day composites, smoothed." : ""} The
-            period filter changes the view and the stats above only. Markers
-            always use the full season.
+            map on the parcel shows the per-pixel median NDVI for the selected
+            period. The period filter changes the view only. Markers always use
+            the full season.
           </p>
 
           {analysis.markers.map((marker) => (
