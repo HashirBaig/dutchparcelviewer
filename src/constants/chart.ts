@@ -20,3 +20,11 @@ export const MONTH_LABELS = [
   "Nov",
   "Dec",
 ] as const;
+
+export const SCATTER = {
+  width: 420,
+  height: 230,
+  margin: { top: 12, right: 16, bottom: 38, left: 40 },
+} as const;
+
+export const SCATTER_X_TICKS = 4;

@@ -452,3 +452,55 @@ body {
 .ndvi-legend .muted {
   margin: 0;
 }
+
+.scatter__dot {
+  fill: var(--accent);
+  opacity: 0.75;
+}
+.scatter__line {
+  stroke: #d64545;
+  stroke-width: 2;
+  stroke-dasharray: 5 3;
+}
+
+.precip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.precip p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+.precip a {
+  color: var(--accent);
+}
+
+.reg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+.reg-table th {
+  text-align: right;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 3px 4px;
+}
+.reg-table td {
+  text-align: right;
+  padding: 3px 4px;
+  border-top: 1px solid var(--border);
+}
+.reg-table th:first-child,
+.reg-table td:first-child {
+  text-align: left;
+}
+.reg-table__active {
+  background: #eff6ff;
+}
+.reg-table__sig {
+  font-weight: 700;
+  color: #1f7a45;
+}

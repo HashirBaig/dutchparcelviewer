@@ -39,3 +39,5 @@ export function seasonBounds(year: number): DateRange {
     endDoy: monthStartDoy(year, SEASON_END_MONTH + 1) - 1,
   };
 }
+
+export const todayIso = (): string => new Date().toISOString().slice(0, 10);

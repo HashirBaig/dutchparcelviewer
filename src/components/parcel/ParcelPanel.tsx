@@ -12,6 +12,7 @@ import { MarkerCard } from "./MarkerCard";
 import { ParcelSummary } from "./ParcelSummary";
 import { ProfileNote } from "./ProfileNote";
 import { RangeStatsPanel } from "./RangeStatsPanel";
+import { PrecipPanel } from "../precip/PrecipPanel";
 
 interface Props {
   parcel: Parcel | null;
@@ -81,6 +82,13 @@ export function ParcelPanel({ parcel, analysis, dateRange }: Props) {
           />
 
           <RangeStatsPanel stats={stats} />
+          <PrecipPanel
+            key={parcel.id}
+            parcel={parcel}
+            year={year}
+            observations={analysis.observations}
+            range={dateRange.range}
+          />
 
           <p className="muted">
             {analysis.observations.length} clear observations from{" "}
