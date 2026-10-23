@@ -28,10 +28,12 @@ export const doyToDate = (year: number, doy: number): string =>
   addDays(`${year}-01-01`, doy - 1);
 
 /** e.g. "12 Apr" */
-export function formatDoy(year: number, doy: number): string {
-  const date = doyToDate(year, doy);
+export function formatIsoDate(date: string): string {
   return `${Number(date.slice(8, 10))} ${MONTH_LABELS[Number(date.slice(5, 7)) - 1]}`;
 }
+
+export const formatDoy = (year: number, doy: number): string =>
+  formatIsoDate(doyToDate(year, doy));
 
 export function seasonBounds(year: number): DateRange {
   return {

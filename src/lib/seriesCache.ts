@@ -11,8 +11,8 @@ interface CacheEntry {
   result: NdviSeriesResult;
 }
 
-// Past seasons never change, so they do not expire.
-const ttlFor = (year: number) =>
+/** Past seasons never change, so they do not expire. */
+export const ttlForYear = (year: number): number =>
   year < new Date().getFullYear() ? Number.POSITIVE_INFINITY : CACHE_TTL_MS;
 
 function openDb(): Promise<IDBDatabase> {
@@ -27,7 +27,7 @@ function openDb(): Promise<IDBDatabase> {
 
 export async function loadCachedSeries(
   key: string,
-  year: number,
+  ttlMs: number,
 ): Promise<NdviSeriesResult | null> {
   try {
     const db = await openDb();
@@ -43,7 +43,7 @@ export async function loadCachedSeries(
       },
     );
     db.close();
-    if (!entry || Date.now() - entry.savedAt > ttlFor(year)) return null;
+    if (!entry || Date.now() - entry.savedAt > ttlMs) return null;
     return entry.result;
   } catch {
     return null;

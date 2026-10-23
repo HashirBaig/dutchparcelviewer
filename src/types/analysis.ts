@@ -5,6 +5,7 @@ import type { NdviObservation, Progress } from "./timeseries";
 export type AnalysisPhase = "idle" | "searching" | "reading" | "done" | "error";
 
 export interface AnalysisState {
+  parcelId: string | null; // which parcel this state belongs to
   phase: AnalysisPhase;
   progress: Progress;
   observations: NdviObservation[];

@@ -22,8 +22,9 @@ export function NdviLegend({ state, visible, onToggle }: Props) {
       </label>
 
       {state.status === "loading" && (
-        <p className="muted">Building NDVI map…</p>
+        <p className="muted">Processing scenes…</p>
       )}
+
       {state.status === "empty" && (
         <p className="muted">No clear observations in this period.</p>
       )}

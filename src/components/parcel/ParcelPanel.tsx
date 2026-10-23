@@ -1,114 +1,58 @@
-import { CROP_PROFILES } from "../../constants/crops";
-import type { DateRangeController } from "../../hooks/useDateRange";
-import { filterByRange } from "../../lib/dateRange";
-import { computeRangeStats } from "../../lib/rangeStats";
+import type { PeriodController } from "../../hooks/usePeriod";
 import type { AnalysisState } from "../../types/analysis";
 import type { Parcel } from "../../types/parcel";
-import { NdviChart } from "../charts/NdviChart";
-import { DateRangeFilter } from "../filters/DateRangeFilter";
-import { ProgressBar } from "../ui/ProgressBar";
-import { StatusBadge } from "../ui/StatusBadge";
-import { MarkerCard } from "./MarkerCard";
+import { PeriodTabs } from "../filters/PeriodTabs";
 import { ParcelSummary } from "./ParcelSummary";
-import { ProfileNote } from "./ProfileNote";
-import { RangeStatsPanel } from "./RangeStatsPanel";
-import { PrecipPanel } from "../precip/PrecipPanel";
+import { RecentView } from "./RecentView";
+import { SeasonPending } from "./SeasonPending";
+import { SeasonView } from "./SeasonView";
 
 interface Props {
   parcel: Parcel | null;
-  analysis: AnalysisState;
-  dateRange: DateRangeController;
+  recent: AnalysisState;
+  season: AnalysisState;
+  period: PeriodController;
 }
 
-export function ParcelPanel({ parcel, analysis, dateRange }: Props) {
+export function ParcelPanel({ parcel, recent, season, period }: Props) {
   if (!parcel) {
     return (
       <div className="panel panel--empty">
         <p>
-          Select a crop parcel on the map to build its Sentinel-2 NDVI time
-          series and run markers.
+          Select a crop parcel on the map. The most recent Sentinel-2 scenes
+          appear first, and the full season loads in the background.
         </p>
       </div>
     );
   }
 
   const year = parcel.year ?? new Date().getFullYear();
-  const profile = CROP_PROFILES[parcel.cropGroup];
-  const events = analysis.markers.flatMap((m) => m.events);
-  const smoothed = analysis.markers.find((m) => m.series)?.series;
-  const stats = computeRangeStats(
-    filterByRange(analysis.observations, dateRange.range),
-  );
+  const seasonReady = season.phase === "done";
 
   return (
     <div className="panel">
       <ParcelSummary parcel={parcel} />
 
-      {analysis.phase === "searching" && (
-        <p className="muted">Searching Sentinel-2 scenes…</p>
-      )}
-      {analysis.phase === "reading" && <ProgressBar {...analysis.progress} />}
-      {analysis.phase === "error" && <p className="error">{analysis.error}</p>}
+      <PeriodTabs
+        year={year}
+        mode={period.mode}
+        range={period.dateRange.range}
+        seasonReady={seasonReady}
+        onRecent={period.selectRecent}
+        onPreset={period.selectPreset}
+      />
 
-      {analysis.phase === "done" && analysis.verdict && (
-        <>
-          <div className="verdict">
-            <StatusBadge status={analysis.verdict.status} />
-            <span>{analysis.verdict.summary}</span>
-          </div>
-
-          <DateRangeFilter
-            year={year}
-            observations={analysis.observations}
-            bounds={dateRange.bounds}
-            range={dateRange.range}
-            isFull={dateRange.isFull}
-            onChange={dateRange.setRange}
-            onPreset={dateRange.applyPreset}
-            onReset={dateRange.reset}
-          />
-
-          <NdviChart
-            observations={analysis.observations}
-            events={events}
-            smoothed={smoothed}
-            year={year}
-            range={dateRange.range}
-            expectedWindow={
-              profile
-                ? { startDoy: profile.peakStartDoy, endDoy: profile.peakEndDoy }
-                : undefined
-            }
-          />
-
-          <RangeStatsPanel stats={stats} />
-          <PrecipPanel
-            key={parcel.id}
-            parcel={parcel}
-            year={year}
-            observations={analysis.observations}
-            range={dateRange.range}
-          />
-
-          <p className="muted">
-            {analysis.observations.length} clear observations from{" "}
-            {analysis.scenesTotal} scenes
-            {analysis.scenesFailed > 0
-              ? ` (${analysis.scenesFailed} failed to read)`
-              : ""}
-            . Dots: per-scene median NDVI of cloud-free pixels.
-            {smoothed ? " Orange line: 12-day composites, smoothed." : ""} The
-            map on the parcel shows the per-pixel median NDVI for the selected
-            period. The period filter changes the view only. Markers always use
-            the full season.
-          </p>
-
-          {analysis.markers.map((marker) => (
-            <MarkerCard key={marker.id} marker={marker} />
-          ))}
-
-          <ProfileNote group={parcel.cropGroup} />
-        </>
+      {period.mode === "recent" ? (
+        <RecentView recent={recent} season={season} />
+      ) : seasonReady ? (
+        <SeasonView
+          parcel={parcel}
+          year={year}
+          season={season}
+          period={period}
+        />
+      ) : (
+        <SeasonPending season={season} />
       )}
     </div>
   );

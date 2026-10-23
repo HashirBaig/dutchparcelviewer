@@ -4,3 +4,5 @@ export interface RangePreset {
   startMonth: number; // 1-12, inclusive
   endMonth: number; // 1-12, inclusive
 }
+
+export type PeriodMode = "recent" | "season";

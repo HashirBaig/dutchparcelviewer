@@ -1,7 +1,5 @@
-import { MIN_RANGE_DAYS, RANGE_PRESETS } from "../../constants/dateFilter";
-import { presetToRange, sameRange } from "../../lib/dateRange";
+import { MIN_RANGE_DAYS } from "../../constants/dateFilter";
 import { formatDoy } from "../../lib/dates";
-import type { RangePreset } from "../../types/dateFilter";
 import type { DateRange, NdviObservation } from "../../types/timeseries";
 import { SeasonOverview } from "../charts/SeasonOverview";
 import { DualRangeSlider } from "../ui/DualRangeSlider";
@@ -13,7 +11,6 @@ interface Props {
   range: DateRange;
   isFull: boolean;
   onChange: (range: DateRange) => void;
-  onPreset: (preset: RangePreset) => void;
   onReset: () => void;
 }
 
@@ -24,7 +21,6 @@ export function DateRangeFilter({
   range,
   isFull,
   onChange,
-  onPreset,
   onReset,
 }: Props) {
   const days = range.endDoy - range.startDoy + 1;
@@ -42,19 +38,6 @@ export function DateRangeFilter({
           </button>
         )}
       </header>
-
-      <div className="chips">
-        {RANGE_PRESETS.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            className={`chip${sameRange(range, presetToRange(year, preset)) ? " chip--active" : ""}`}
-            onClick={() => onPreset(preset)}
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
 
       <div className="filter__brush">
         <SeasonOverview

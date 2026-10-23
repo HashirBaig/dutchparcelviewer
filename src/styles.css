@@ -504,3 +504,55 @@ body {
   font-weight: 700;
   color: #1f7a45;
 }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: chip-pulse 1s ease-in-out infinite;
+}
+.chip--active .chip__dot {
+  background: #fff;
+}
+@keyframes chip-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.pending {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+.pending h3 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+}
+.pending p {
+  margin: 4px 0;
+}
+
+.bg-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  font-size: 0.8rem;
+}
+.bg-status p {
+  margin: 0;
+}
+.bg-status--done {
+  color: #1f7a45;
+}

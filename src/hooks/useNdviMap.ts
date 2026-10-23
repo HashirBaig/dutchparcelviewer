@@ -19,19 +19,19 @@ const EMPTY: NdviMapState = { ...IDLE, status: "empty" };
 
 export function useNdviMap(
   parcel: Parcel | null,
-  analysis: AnalysisState,
+  source: Pick<AnalysisState, "phase" | "pixels">,
   range: DateRange,
 ): NdviMapState {
   // Defer the range so dragging the slider stays smooth while the image re-renders
   const deferredRange = useDeferredValue(range);
-  const { phase, pixels } = analysis;
+  const { phase, pixels } = source;
 
   return useMemo(() => {
     if (!parcel) return IDLE;
     if (phase === "idle" || phase === "searching" || phase === "reading")
       return LOADING;
     if (phase === "error" || !pixels) return EMPTY;
-    if (pixels.parcelId !== parcel.id) return LOADING; // stale data from the previous parcel
+    if (pixels.parcelId !== parcel.id) return LOADING;
 
     const aggregated = aggregateStack(pixels, deferredRange);
     if (aggregated.sceneCount === 0) return EMPTY;

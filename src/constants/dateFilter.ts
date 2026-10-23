@@ -1,5 +1,6 @@
 import { SEASON_END_MONTH, SEASON_START_MONTH } from "./analysis";
 import type { RangePreset } from "../types/dateFilter";
+import type { DateRange } from "../types/timeseries";
 
 export const MIN_RANGE_DAYS = 14;
 
@@ -24,3 +25,6 @@ export const TICKS = {
 
 // Trend arrows only when the change is clear (NDVI per 30 days)
 export const TREND_THRESHOLD = 0.02;
+
+/** Covers every day of the year: used when no date filtering is wanted. */
+export const ALL_DAYS: DateRange = { startDoy: 1, endDoy: 366 };
